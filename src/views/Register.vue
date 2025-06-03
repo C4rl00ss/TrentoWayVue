@@ -31,7 +31,7 @@ async function register() {
     lastName: cognome.value
   }
 
-  console.log("📤 Dati inviati al backend:", dati)
+  console.log("Dati inviati al backend:", dati)
 
   try {
     const response = await fetch(API_URL, {
@@ -45,6 +45,13 @@ async function register() {
     if (!response.ok) {
       throw new Error(data.error || 'Errore registrazione')
     }
+
+    // Salva il login
+    localStorage.setItem('user', JSON.stringify(data.user))
+    localStorage.setItem('token', data.token)
+
+    // Redirect alla home
+    window.location.href = '/'
 
     successMessage.value = 'Registrazione completata con successo!'
   } catch (error) {
