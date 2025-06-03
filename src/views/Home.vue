@@ -1,6 +1,14 @@
 <template>
   <div>
-    <h1 class="title">Trento Way</h1>
+    <header class="header">
+      <h1 class="title">TrentoWay</h1>
+
+      <nav class="tasti_autenticazione">
+        <RouterLink to="/login" class="button">Login</RouterLink>
+        <RouterLink to="/register" class="button">Registrati</RouterLink>
+      </nav>
+
+    </header>
     <div id="map"></div>
   </div>
 </template>
@@ -53,10 +61,38 @@ onMounted(() => {
 })
 </script>
 
+
+
+
 <style scoped>
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+}
+
 .title {
-  text-align: center;
-  margin: 20px;
+  margin: 0;
+  font-size: 2rem;
+}
+
+.nav-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.button {
+  padding: 8px 12px;
+  background-color: #4CAF50;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+.button:hover {
+  background-color: #45a049;
 }
 
 #map {
