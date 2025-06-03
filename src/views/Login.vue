@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { setLoggedUser } from '@/states/loggedUser'
 
 const HOST = import.meta.env.VITE_API_HOST || 'http://localhost:3000'
-const API_URL = `${HOST}/api/v1/login`
+const API_URL = `${HOST}/api/v1/autenticazione/login`
 
 const email = ref('')
 const password = ref('')
@@ -12,35 +12,32 @@ const errorMessage = ref('')
 const emit = defineEmits(['login'])
 
 async function login() {
-  errorMessage.value = ''
-
+  errorMessage.value = '';
   try {
-    const res = await fetch(API_URL, {
+    const response = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: email.value,
-        password: password.value
-      })
-    })
+      body: JSON.stringify({ email: email.value, password: password.value }),
+    });
 
-    const data = await res.json()
+    const data = await response.json();
 
-    if (!res.ok) {
-      errorMessage.value = data.message || 'Errore di autenticazione'
-      return
+    if (!response.ok) {
+      throw new Error(data.message || 'Errore login');
     }
 
-    // Salva l'utente nel reactive store
-    setLoggedUser(data)
+    setLoggedUser(data);
+    console.log("Login riuscito:", data.user);
 
-    emit('login', data) // puoi usarlo nel parent se vuoi fare un redirect
+    // 👇 Esegui il redirect come specificato dal backend
+    window.location.href = data.redirectTo;
 
   } catch (error) {
-    errorMessage.value = 'Errore di rete o server'
-    console.error(error)
+    errorMessage.value = error.message;
+    console.error("Errore durante il login:", error.message);
   }
 }
+
 </script>
 
 <template>
