@@ -1,15 +1,15 @@
-
 <script setup>
 import { ref } from 'vue'
 
 const HOST = import.meta.env.VITE_API_HOST || 'http://localhost:3000'
-const API_URL = `${HOST}/api/v1/autenticazione/register`
+const API_URL = `${HOST}/api/v1/autenticazione/registrazione`
 
 const email = ref('')
 const password = ref('')
 const confermaPassword = ref('')
 const nome = ref('')
 const cognome = ref('')
+const username = ref('')
 const errorMessage = ref('')
 const successMessage = ref('')
 
@@ -22,25 +22,31 @@ async function register() {
     return
   }
 
+  const dati = {
+    username: username.value,
+    email: email.value,
+    password: password.value,
+    confirmPassword: confermaPassword.value,
+    firstName: nome.value,
+    lastName: cognome.value
+  }
+
+  console.log("📤 Dati inviati al backend:", dati)
+
   try {
     const response = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: email.value,
-        password: password.value,
-        nome: nome.value,
-        cognome: cognome.value
-      }),
+      body: JSON.stringify(dati),
     })
 
     const data = await response.json()
 
     if (!response.ok) {
-      throw new Error(data.message || 'Errore registrazione')
+      throw new Error(data.error || 'Errore registrazione')
     }
 
-    successMessage.value = 'Registrazione completata con successo! Puoi accedere ora.'
+    successMessage.value = 'Registrazione completata con successo!'
   } catch (error) {
     errorMessage.value = error.message
     console.error("Errore durante la registrazione:", error.message)
@@ -54,6 +60,7 @@ async function register() {
     <form @submit.prevent="register" class="register-form">
       <input v-model="nome" type="text" placeholder="Nome" required />
       <input v-model="cognome" type="text" placeholder="Cognome" required />
+      <input v-model="username" type="text" placeholder="Username" required />
       <input v-model="email" type="email" placeholder="Email" required />
       <input v-model="password" type="password" placeholder="Password" required />
       <input v-model="confermaPassword" type="password" placeholder="Conferma Password" required />
