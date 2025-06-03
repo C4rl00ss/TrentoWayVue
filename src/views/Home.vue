@@ -4,19 +4,39 @@
       <h1 class="title">TrentoWay</h1>
 
       <nav class="tasti_autenticazione">
-        <RouterLink to="/login" class="button">Login</RouterLink>
-        <RouterLink to="/register" class="button">Registrati</RouterLink>
+        <template v-if="!loggedUser">
+          <RouterLink to="/login" class="button">Login</RouterLink>
+          <RouterLink to="/register" class="button">Registrati</RouterLink>
+        </template>
+        <template v-else>
+          <span class="welcome-msg">Benvenuto, {{ loggedUser.username }}!</span>
+          <button @click="logout" class="button logout">Logout</button>
+        </template>
       </nav>
 
     </header>
+
+
     <div id="map"></div>
   </div>
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+const loggedUser = ref(null)
 
 onMounted(() => {
+
+  const storedUser = localStorage.getItem('user')
+  if (storedUser) {
+    loggedUser.value = JSON.parse(storedUser)
+    console.log("Utente loggato:", loggedUser.value)
+  }
+
   loadScript('http://localhost:3000/api/maps-config.js')
     .then(() => {
       loadGoogleMapsScript(window.GOOGLE_MAPS_API_KEY)
@@ -59,6 +79,14 @@ onMounted(() => {
     })
   }
 })
+
+// Funzione per fare logout
+function logout() {
+  localStorage.removeItem('user')
+  loggedUser.value = null
+  router.push('/') // Ritorna alla home
+}
+
 </script>
 
 
@@ -93,6 +121,12 @@ onMounted(() => {
 
 .button:hover {
   background-color: #45a049;
+}
+
+.welcome-msg {
+  font-weight: bold;
+  font-size: 1rem;
+  color: #333;
 }
 
 #map {
