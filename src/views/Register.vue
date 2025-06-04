@@ -16,12 +16,12 @@ const successMessage = ref('')
 async function register() {
   errorMessage.value = ''
   successMessage.value = ''
-
+/*
   if (password.value !== confermaPassword.value) {
     errorMessage.value = 'Le password non coincidono'
     return
   }
-
+*/
   const dati = {
     username: username.value,
     email: email.value,
@@ -43,7 +43,7 @@ async function register() {
     const data = await response.json()
 
     if (!response.ok) {
-      throw new Error(data.error || 'Errore registrazione')
+      throw new Error(data.message || 'Errore registrazione')
     }
 
     // Salva il login
@@ -51,7 +51,7 @@ async function register() {
     localStorage.setItem('token', data.token)
 
     // Redirect alla home
-    window.location.href = '/'
+    window.location.href = data.redirectTo;
 
     successMessage.value = 'Registrazione completata con successo!'
   } catch (error) {

@@ -82,10 +82,12 @@ onMounted(() => {
 
 // Funzione per fare logout
 function logout() {
-  localStorage.removeItem('user')
+  localStorage.removeItem('user')  //rimuove l'utente 
+  localStorage.removeItem('token')  //rimuove il token
   loggedUser.value = null
   router.push('/') // Ritorna alla home
 }
+
 
 </script>
 
@@ -117,6 +119,8 @@ function logout() {
   text-decoration: none;
   border-radius: 6px;
   font-weight: bold;
+  margin-right: 0.2rem;
+  margin-right: 0.2rem;
 }
 
 .button:hover {

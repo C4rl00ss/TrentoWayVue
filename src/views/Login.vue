@@ -29,7 +29,7 @@ async function login() {
     setLoggedUser(data);
     console.log("Login riuscito:", data.user);
 
-    // 👇 Esegui il redirect come specificato dal backend
+    //Esegui il redirect come specificato dal backend
     window.location.href = data.redirectTo;
 
   } catch (error) {
