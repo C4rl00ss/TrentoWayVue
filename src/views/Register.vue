@@ -16,12 +16,7 @@ const successMessage = ref('')
 async function register() {
   errorMessage.value = ''
   successMessage.value = ''
-/*
-  if (password.value !== confermaPassword.value) {
-    errorMessage.value = 'Le password non coincidono'
-    return
-  }
-*/
+
   const dati = {
     username: username.value,
     email: email.value,
@@ -56,7 +51,7 @@ async function register() {
     successMessage.value = 'Registrazione completata con successo!'
   } catch (error) {
     errorMessage.value = error.message
-    console.error("Errore durante la registrazione:", error.message)
+
   }
 }
 </script>

@@ -119,8 +119,8 @@ function logout() {
   text-decoration: none;
   border-radius: 6px;
   font-weight: bold;
-  margin-right: 0.2rem;
-  margin-right: 0.2rem;
+  margin-right: 0.5rem;
+  margin-right: 0.5rem;
 }
 
 .button:hover {
@@ -131,6 +131,8 @@ function logout() {
   font-weight: bold;
   font-size: 1rem;
   color: #333;
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
 }
 
 #map {

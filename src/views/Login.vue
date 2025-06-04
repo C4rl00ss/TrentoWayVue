@@ -17,19 +17,31 @@ async function login() {
     const response = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email.value, password: password.value }),
+      body: JSON.stringify({
+        email: email.value,
+        password: password.value
+      }),
     });
 
-    const data = await response.json();
+    let data;
+    try {
+      data = await response.json();
+    } catch (jsonErr) {
+      throw new Error('Errore nel parsing della risposta del server');
+    }
 
+    //Se errore esco prima
     if (!response.ok) {
       throw new Error(data.message || 'Errore login');
     }
 
+    // Salva il login nello stato globale
     setLoggedUser(data);
-    console.log("Login riuscito:", data.user);
 
-    //Esegui il redirect come specificato dal backend
+    localStorage.setItem('user', JSON.stringify(data.user));
+    localStorage.setItem('token', data.token);
+
+    // redirect
     window.location.href = data.redirectTo;
 
   } catch (error) {
@@ -37,6 +49,7 @@ async function login() {
     console.error("Errore durante il login:", error.message);
   }
 }
+
 
 </script>
 
