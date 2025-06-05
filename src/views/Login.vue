@@ -1,6 +1,9 @@
 <script setup>
 import { ref } from 'vue'
 import { setLoggedUser } from '@/states/loggedUser'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const HOST = import.meta.env.VITE_API_HOST || 'http://localhost:3000'
 const API_URL = `${HOST}/api/v1/autenticazione/login`
@@ -42,7 +45,7 @@ async function login() {
     localStorage.setItem('token', data.token);
 
     // redirect
-    window.location.href = data.redirectTo;
+    router.push(data.redirectTo || '/')
 
   } catch (error) {
     errorMessage.value = error.message;

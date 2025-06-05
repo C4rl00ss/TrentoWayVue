@@ -1,5 +1,8 @@
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const HOST = import.meta.env.VITE_API_HOST || 'http://localhost:3000'
 const API_URL = `${HOST}/api/v1/autenticazione/registrazione`
@@ -46,7 +49,7 @@ async function register() {
     localStorage.setItem('token', data.token)
 
     // Redirect alla home
-    window.location.href = data.redirectTo;
+    router.push(data.redirectTo || '/')
 
     successMessage.value = 'Registrazione completata con successo!'
   } catch (error) {
