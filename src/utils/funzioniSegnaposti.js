@@ -1,7 +1,10 @@
+const HOST = import.meta.env.VITE_API_BASE_URL
+
+
 export async function posizionaSegnaposti(map) {
   if (!map) return;
 
-  const response = await fetch('http://localhost:3000/api/v1/segnaposti');
+  const response = await fetch(`${HOST}/api/v1/segnaposti`);
   const segnaposti = await response.json();
 
   // Una sola finestra info per tutti i marker
@@ -16,7 +19,7 @@ export async function posizionaSegnaposti(map) {
       map,
       title: segnaposto.nome,
       icon: {
-        url: 'http://localhost:3000/target.svg',
+        url: `${HOST}/target.svg`,
         scaledSize: new google.maps.Size(40, 40)
       }
     });

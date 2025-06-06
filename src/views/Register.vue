@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
-const HOST = import.meta.env.VITE_API_HOST || 'http://localhost:3000'
+const HOST = import.meta.env.VITE_API_HOST 
 const API_URL = `${HOST}/api/v1/autenticazione/registrazione`
 
 const email = ref('')

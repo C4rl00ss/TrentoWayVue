@@ -26,7 +26,7 @@ import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { posizionaSegnaposti } from '@/utils/funzioniSegnaposti.js'
 
-
+const HOST = import.meta.env.VITE_API_BASE_URL
 
 const router = useRouter()
 
@@ -64,7 +64,7 @@ onMounted(async () => {
   }
 
   try {
-    await loadScript('http://192.168.1.162:3000/api/maps-config.js')
+    await loadScript(`${HOST}/api/maps-config.js`)
     await loadGoogleMapsScript(window.GOOGLE_MAPS_API_KEY)
     // Posso chiamare posizionaSegnaposti solo dopo che la mappa è pronta
     await posizionaSegnaposti()
