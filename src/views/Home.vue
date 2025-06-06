@@ -24,6 +24,9 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { posizionaSegnaposti } from '@/utils/funzioniSegnaposti.js'
+
+
 
 const router = useRouter()
 
@@ -51,20 +54,6 @@ function loadGoogleMapsScript(apiKey) {
     document.head.appendChild(script)
   }
 
-async function posizionaSegnaposti() {
-  if (!map) return
-
-  const response = await fetch('http://localhost:3000/api/v1/segnaposti')
-  const segnaposti = await response.json()
-
-  segnaposti.forEach(segnaposto => {
-    new google.maps.Marker({
-      position: { lat: segnaposto.coordinate.lat, lng: segnaposto.coordinate.lng },
-      map,
-      title: segnaposto.title
-    })
-  })
-}
 
 
 onMounted(async () => {
@@ -75,7 +64,7 @@ onMounted(async () => {
   }
 
   try {
-    await loadScript('http://localhost:3000/api/maps-config.js')
+    await loadScript('http://192.168.1.162:3000/api/maps-config.js')
     await loadGoogleMapsScript(window.GOOGLE_MAPS_API_KEY)
     // Posso chiamare posizionaSegnaposti solo dopo che la mappa è pronta
     await posizionaSegnaposti()
@@ -92,7 +81,7 @@ onMounted(async () => {
     })
 
     // Puoi anche spostare qui la chiamata a posizionaSegnaposti se vuoi
-    posizionaSegnaposti()
+    posizionaSegnaposti(map)
   }
 })
 
