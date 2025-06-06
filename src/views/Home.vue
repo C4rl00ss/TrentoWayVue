@@ -29,31 +29,10 @@ const router = useRouter()
 
 const loggedUser = ref(null)
 
-onMounted(() => {
+let map = null
 
-  const storedUser = localStorage.getItem('user')
-  if (storedUser) {
-    loggedUser.value = JSON.parse(storedUser)
-    console.log("Utente loggato:", loggedUser.value)
-  }
 
-  loadScript('http://localhost:3000/api/maps-config.js')
-    .then(() => {
-      loadGoogleMapsScript(window.GOOGLE_MAPS_API_KEY)
-    })
-    .catch((err) => {
-      console.error('Errore caricamento config:', err)
-    })
-
-  function loadGoogleMapsScript(apiKey) {
-    const script = document.createElement('script')
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap`
-    script.async = true
-    script.defer = true
-    document.head.appendChild(script)
-  }
-
-  function loadScript(src) {
+function loadScript(src) {
     return new Promise((resolve, reject) => {
       const script = document.createElement('script')
       script.src = src
@@ -63,22 +42,60 @@ onMounted(() => {
     })
   }
 
-  // Iniettiamo la funzione globalmente perché Google Maps lo richiede
+
+function loadGoogleMapsScript(apiKey) {
+    const script = document.createElement('script')
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap`
+    script.async = true
+    script.defer = true
+    document.head.appendChild(script)
+  }
+
+async function posizionaSegnaposti() {
+  if (!map) return
+
+  const response = await fetch('http://localhost:3000/api/v1/segnaposti')
+  const segnaposti = await response.json()
+
+  segnaposti.forEach(segnaposto => {
+    new google.maps.Marker({
+      position: { lat: segnaposto.coordinate.lat, lng: segnaposto.coordinate.lng },
+      map,
+      title: segnaposto.title
+    })
+  })
+}
+
+
+onMounted(async () => {
+  const storedUser = localStorage.getItem('user')
+  if (storedUser) {
+    loggedUser.value = JSON.parse(storedUser)
+    console.log("Utente loggato:", loggedUser.value)
+  }
+
+  try {
+    await loadScript('http://localhost:3000/api/maps-config.js')
+    await loadGoogleMapsScript(window.GOOGLE_MAPS_API_KEY)
+    // Posso chiamare posizionaSegnaposti solo dopo che la mappa è pronta
+    await posizionaSegnaposti()
+  } catch (err) {
+    console.error('Errore caricamento config o mappa:', err)
+  }
+
   window.initMap = () => {
     const centerCoords = { lat: 46.0704, lng: 11.1196 }
 
-    const map = new google.maps.Map(document.getElementById('map'), {
+    map = new google.maps.Map(document.getElementById('map'), {
       center: centerCoords,
       zoom: 13,
     })
 
-    new google.maps.Marker({
-      position: centerCoords,
-      map: map,
-      title: 'Centro di Trento',
-    })
+    // Puoi anche spostare qui la chiamata a posizionaSegnaposti se vuoi
+    posizionaSegnaposti()
   }
 })
+
 
 // Funzione per fare logout
 function logout() {
