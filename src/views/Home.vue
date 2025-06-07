@@ -18,6 +18,12 @@
 
 
     <div id="map"></div>
+    <popUp 
+       v-if ="SegnapostoSelezionato"
+       :segnaposto = "SegnapostoSelezionato"
+        @chiudi="SegnapostoSelezionato = null"
+    />
+
   </div>
 </template>
 
@@ -25,12 +31,15 @@
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { posizionaSegnaposti } from '@/utils/funzioniSegnaposti.js'
+import popUp  from '@/components/popUp.vue'
 
 const HOST = import.meta.env.VITE_API_BASE_URL
 
 const router = useRouter()
 
 const loggedUser = ref(null)
+
+const SegnapostoSelezionato = ref(null)
 
 let map = null
 
@@ -67,7 +76,7 @@ onMounted(async () => {
     await loadScript(`${HOST}/api/maps-config.js`)
     await loadGoogleMapsScript(window.GOOGLE_MAPS_API_KEY)
     // Posso chiamare posizionaSegnaposti solo dopo che la mappa è pronta
-    await posizionaSegnaposti()
+   
   } catch (err) {
     console.error('Errore caricamento config o mappa:', err)
   }
@@ -80,8 +89,13 @@ onMounted(async () => {
       zoom: 13,
     })
 
-    // Puoi anche spostare qui la chiamata a posizionaSegnaposti se vuoi
-    posizionaSegnaposti(map)
+    
+    // chiamata alla funzione per posizionare i segnaposti e anche per gestire il click sui segnaposti
+    // questa funzione prende come secondo parametro un'altra funzione che ha come input segnaposto e viene chiamata
+    // nel file funzioniSegnaposti.js qunando si clicca su un segnaposto
+     posizionaSegnaposti(map, (segnaposto) => {
+      SegnapostoSelezionato.value = segnaposto;
+     })
   }
 })
 

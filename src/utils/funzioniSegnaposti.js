@@ -1,7 +1,7 @@
 const HOST = import.meta.env.VITE_API_BASE_URL
 
 
-export async function posizionaSegnaposti(map) {
+export async function posizionaSegnaposti(map, callback) {
   if (!map) return;
 
   const response = await fetch(`${HOST}/api/v1/segnaposti`);
@@ -24,19 +24,13 @@ export async function posizionaSegnaposti(map) {
       }
     });
 
-    const contentString = `
-      <div style="max-width: 250px;">
-        <h3>${segnaposto.nome}</h3>
-        <p><strong>Descrizione:</strong> ${segnaposto.descrizione || 'Nessuna descrizione'}</p>
-        <p><strong>Indirizzo:</strong> ${segnaposto.indirizzo || 'N/D'}</p>
-        <p><strong>Punti:</strong> ${segnaposto.punti}</p>
-        <p><strong>Quiz disponibili:</strong> ${segnaposto.quiz.length}</p>
-      </div>
-    `;
 
+    // la funzione callback è quella presa in input (è il secondo parametro di posizionaSegnaposti) ed è definita nel file Home.vue
+    // quando viene cliccato un marker, viene chiamata la callback con il segnaposto come argomento
     marker.addListener('click', () => {
-      infoWindow.setContent(contentString);
-      infoWindow.open(map, marker);
+      if (callback){
+        callback(segnaposto)
+      }
     });
   });
 }
