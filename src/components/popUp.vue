@@ -19,8 +19,24 @@
 </template>
 
 <script setup>
-defineProps({ segnaposto: Object });
+import { useRouter } from 'vue-router'
+
+const props = defineProps({
+  segnaposto: Object
+})
+
+const router = useRouter()
+
+/* //funzione tasto da finire in qunato bisogna capire come vogliamo fare la pagina per i quiz 
+function vaiAiQuiz() {
+  // Qui fai la navigazione verso la pagina dei quiz associati al segnaposto
+  router.push(`/quiz/${props.segnaposto._id}`)
+}
+
+*/
 </script>
+
+
 
 <style scoped>
 .overlay {
