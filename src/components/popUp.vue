@@ -1,8 +1,18 @@
 <template>
   <div class="overlay" @click.self="$emit('chiudi')">
     <div class="modale">
-      <h2>{{ segnaposto.nome }}</h2>
-      <p>{{ segnaposto.descrizione }}</p>
+        <h2>{{ segnaposto.nome }}</h2>
+        <h5> Descrizione: </h5>
+        <p>{{ segnaposto.descrizione }}</p>
+
+        <h5> Quiz: </h5>
+        
+
+        <h5> Punti: </h5>
+        <p>{{ segnaposto.punti }}</p>
+        <h5> Recensioni: </h5>
+        
+
       <button @click="$emit('chiudi')">Chiudi</button>
     </div>
   </div>

@@ -87,9 +87,16 @@ onMounted(async () => {
     map = new google.maps.Map(document.getElementById('map'), {
       center: centerCoords,
       zoom: 13,
-    })
+      styles: [
+      {
+        featureType: "poi",
+        elementType: "labels",
+        stylers: [{ visibility: "off" }]
+      }
+  ]
 
-    
+    })
+ 
     // chiamata alla funzione per posizionare i segnaposti e anche per gestire il click sui segnaposti
     // questa funzione prende come secondo parametro un'altra funzione che ha come input segnaposto e viene chiamata
     // nel file funzioniSegnaposti.js qunando si clicca su un segnaposto

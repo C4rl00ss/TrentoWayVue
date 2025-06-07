@@ -20,7 +20,8 @@ export async function posizionaSegnaposti(map, callback) {
       title: segnaposto.nome,
       icon: {
         url: `${HOST}/target.svg`,
-        scaledSize: new google.maps.Size(40, 40)
+        scaledSize: new google.maps.Size(40, 40),
+        anchor: new google.maps.Point(20, 20)
       }
     });
 
