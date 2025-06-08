@@ -2,16 +2,18 @@
   <div class="overlay" @click.self="$emit('chiudi')">
     <div class="modale">
         <h2>{{ segnaposto.nome }}</h2>
+        
         <h5> Descrizione: </h5>
         <p>{{ segnaposto.descrizione }}</p>
 
         <h5> Quiz: </h5>
-        
+        <p>In fase di sviluppo!</p>
 
         <h5> Punti: </h5>
         <p>{{ segnaposto.punti }}</p>
+
         <h5> Recensioni: </h5>
-        
+        <p>In fase di sviluppo!</p>
 
       <button @click="$emit('chiudi')">Chiudi</button>
     </div>
@@ -27,13 +29,7 @@ const props = defineProps({
 
 const router = useRouter()
 
-/* //funzione tasto da finire in qunato bisogna capire come vogliamo fare la pagina per i quiz 
-function vaiAiQuiz() {
-  // Qui fai la navigazione verso la pagina dei quiz associati al segnaposto
-  router.push(`/quiz/${props.segnaposto._id}`)
-}
 
-*/
 </script>
 
 

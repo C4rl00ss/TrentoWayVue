@@ -29,7 +29,7 @@ async function register() {
     lastName: cognome.value
   }
 
-  console.log("Dati inviati al backend:", dati)
+
 
   try {
     const response = await fetch(API_URL, {
