@@ -27,6 +27,7 @@ async function login() {
     });
 
     let data;
+
     try {
       data = await response.json();
       console.log('Risposta dal backend:', data);
@@ -34,47 +35,23 @@ async function login() {
       throw new Error('Errore nel parsing della risposta del server');
     }
 
-    //Se errore esco prima
-    if (!response.ok) {
+    // Se errore, esco subito
+    if (!response.ok || !data.success) {
       throw new Error(data.message || 'Errore login');
     }
 
-    // Salva il login nello stato globale
+    // Salva l'utente nello stato globale
     setLoggedUser(data);
 
-    const ruoloEffettivo = data.user.role || data.user.ruolo;
-    console.log('Ruolo ricevuto:', ruoloEffettivo);
-
-    // Adattiamo il campo "role" a "ruolo" per coerenza con il router
-    const utenteCorretto = {
-      id: data.user.id,
-      email: data.user.email,
-      username: data.user.username,
-      ruolo: ruoloEffettivo 
-    };
-
-    // Salva l'utente nel localStorage
-    localStorage.setItem('user', JSON.stringify(utenteCorretto));
-
+    // Salva token e utente nel localStorage
     localStorage.setItem('token', data.token);
-    console.log('Utente salvato nel localStorage:', utenteCorretto);
+    localStorage.setItem('user', JSON.stringify(data.user));
+    console.log('Utente salvato nel localStorage:', data.user);
 
-    // redirect basato sul ruolo
-    if (utenteCorretto.ruolo === 'admin') {
-      console.log('Reindirizzamento a /admin/dashboard');
-      router.push('/admin/dashboard');
-    } else {
-      console.log('Reindirizzamento a /');
-      router.push('/');
-    }
+    // Redirect in base al ruolo
+    console.log(`Reindirizzamento a ${data.redirectTo}`);
+    router.push(data.redirectTo);
 
-    //const ruolo = data.user?.ruolo || data.user?.role || '';
-    //if (ruolo === 'admin') {
-    //  router.push('/admin/dashboard');
-    //} else {
-    //  router.push('/');
-    //}
-    //console.log('REDIRECT TO:', data.redirectTo);
 
   } catch (error) {
     errorMessage.value = error.message;

@@ -51,6 +51,10 @@
 </template>
 
 <script>
+
+const HOST = import.meta.env.VITE_API_HOST || 'http://localhost:3000'
+
+
 export default {
   name: 'AdminDashboard',
   data() {
@@ -71,7 +75,7 @@ export default {
     async caricaSegnaposti() {
       const token = localStorage.getItem('token');
       try {
-        const response = await fetch('/api/v1/segnaposti', {
+        const response = await fetch(`${HOST}/api/v1/segnaposti`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (!response.ok) throw new Error('Errore nel recupero dei segnaposti');
@@ -95,7 +99,7 @@ export default {
     async creaSegnaposto() {
       const token = localStorage.getItem('token');
       try {
-        const response = await fetch('/api/v1/segnaposti', {
+        const response = await fetch(`${HOST}/api/v1/segnaposti`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -115,7 +119,7 @@ export default {
     async eliminaSegnaposto(id) {
       const token = localStorage.getItem('token');
       try {
-        const response = await fetch(`/api/v1/segnaposti/${id}`, {
+        const response = await fetch(`${HOST}/api/v1/segnaposti/${id}`, {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -146,7 +150,7 @@ export default {
     async salvaModifica() {
       const token = localStorage.getItem('token');
       try {
-        const response = await fetch(`/api/v1/segnaposti/${this.segnapostoInModifica._id}`, {
+        const response = await fetch(`${HOST}/api/v1/segnaposti/${this.segnapostoInModifica._id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
