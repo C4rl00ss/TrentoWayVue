@@ -1,285 +1,220 @@
+<script setup>
+import { ref, onMounted } from 'vue'
+import { posizionaSegnaposti } from '@/utils/funzioniSegnaposti'
+
+const map = ref(null)
+const selectedSegnaposto = ref(null)
+const showForm = ref(false)
+const isEditing = ref(false)
+
+// Campi del form
+const nome = ref('')
+const descrizione = ref('')
+const punti = ref(0)
+const lat = ref(0)
+const lng = ref(0)
+
+const HOST = import.meta.env.VITE_API_BASE_URL
+
+onMounted(() => {
+  const mapOptions = {
+    center: { lat: 46.0667, lng: 11.1167 },
+    zoom: 13
+  }
+  map.value = new google.maps.Map(document.getElementById('map'), mapOptions)
+  caricaSegnaposti()
+})
+
+function caricaSegnaposti() {
+  posizionaSegnaposti(map.value, (segnaposto) => {
+    selectedSegnaposto.value = segnaposto
+    apriFormModifica(segnaposto)
+  })
+}
+
+function apriFormNuovo() {
+  selectedSegnaposto.value = null
+  isEditing.value = false
+  nome.value = ''
+  descrizione.value = ''
+  punti.value = 0
+  lat.value = map.value.getCenter().lat()
+  lng.value = map.value.getCenter().lng()
+  showForm.value = true
+}
+
+function apriFormModifica(segnaposto) {
+  isEditing.value = true
+  showForm.value = true
+  nome.value = segnaposto.nome
+  descrizione.value = segnaposto.descrizione || ''
+  punti.value = segnaposto.punti || 0
+  lat.value = segnaposto.coordinate.lat
+  lng.value = segnaposto.coordinate.lng
+}
+
+async function salvaSegnaposto() {
+  const token = localStorage.getItem('token')
+  const body = {
+    nome: nome.value,
+    descrizione: descrizione.value,
+    punti: punti.value,
+    coordinate: {
+      lat: lat.value,
+      lng: lng.value
+    }
+  }
+
+  const method = isEditing.value ? 'PUT' : 'POST'
+  const url = isEditing.value
+    ? `${HOST}/api/v1/segnaposti/${selectedSegnaposto.value._id}`
+    : `${HOST}/api/v1/segnaposti`
+
+  const response = await fetch(url, {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(body)
+  })
+
+  if (!response.ok) {
+    alert('Errore durante il salvataggio')
+    return
+  }
+
+  showForm.value = false
+  caricaSegnaposti()
+}
+
+async function eliminaSegnaposto() {
+  if (!selectedSegnaposto.value) return
+
+  const token = localStorage.getItem('token')
+
+  const response = await fetch(`${HOST}/api/v1/segnaposti/${selectedSegnaposto.value._id}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+
+  if (!response.ok) {
+    alert('Errore durante l\'eliminazione')
+    return
+  }
+
+  showForm.value = false
+  selectedSegnaposto.value = null
+  caricaSegnaposti()
+}
+</script>
+
 <template>
-  <div>
-    <header class="header">
-      <h1>Admin - Gestione Segnaposti</h1>
-      <button @click="nuovoSegnaposto" class="button">Nuovo Segnaposto</button>
-    </header>
+  <div class="admin-home">
+    <h1>Admin - Gestione Segnaposti</h1>
+    <button class="btn-nuovo" @click="apriFormNuovo">➕ Nuovo Segnaposto</button>
+    
+    <div id="map" class="map"></div>
 
-    <div id="map"></div>
+    <div v-if="showForm" class="form-overlay">
+      <div class="form-container">
+        <h2>{{ isEditing ? 'Modifica' : 'Crea' }} Segnaposto</h2>
+        <form @submit.prevent="salvaSegnaposto">
+          <label>Nome</label>
+          <input v-model="nome" type="text" required />
 
-    <!-- Modal aggiungi/modifica segnaposto -->
-    <div v-if="showForm" class="overlay" @click.self="closeForm">
-      <div class="modale">
-        <h2>{{ formMode === 'edit' ? 'Modifica Segnaposto' : 'Nuovo Segnaposto' }}</h2>
-        <form @submit.prevent="submitForm">
-          <label>Nome:</label>
-          <input v-model="form.nome" required />
+          <label>Descrizione</label>
+          <textarea v-model="descrizione" required></textarea>
 
-          <label>Descrizione:</label>
-          <textarea v-model="form.descrizione" required></textarea>
+          <label>Punti</label>
+          <input v-model.number="punti" type="number" required />
 
-          <label>Punti:</label>
-          <input v-model.number="form.punti" type="number" required />
+          <label>Latitudine</label>
+          <input v-model.number="lat" type="number" step="any" required />
 
-          <label>Latitudine:</label>
-          <input v-model.number="form.coordinate.lat" type="number" step="any" required />
+          <label>Longitudine</label>
+          <input v-model.number="lng" type="number" step="any" required />
 
-          <label>Longitudine:</label>
-          <input v-model.number="form.coordinate.lng" type="number" step="any" required />
-
-          <button type="submit">{{ formMode === 'edit' ? 'Salva' : 'Aggiungi' }}</button>
-          <button type="button" @click="closeForm">Annulla</button>
-          <button v-if="formMode === 'edit'" type="button" @click="eliminaSegnaposto">Elimina</button>
+          <div class="form-buttons">
+            <button type="submit">{{ isEditing ? 'Salva Modifiche' : 'Crea' }}</button>
+            <button type="button" @click="showForm = false">Annulla</button>
+            <button
+              v-if="isEditing"
+              type="button"
+              @click="eliminaSegnaposto"
+              class="btn-elimina"
+            >
+              Elimina
+            </button>
+          </div>
         </form>
       </div>
     </div>
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue'
-
-const HOST = import.meta.env.VITE_API_BASE_URL
-
-const segnaposti = ref([])
-const map = ref(null)
-const markers = ref([])
-
-const showForm = ref(false)
-const formMode = ref('add') // 'add' o 'edit'
-const form = ref({
-  id: null,
-  nome: '',
-  descrizione: '',
-  punti: 0,
-  coordinate: { lat: 46.0704, lng: 11.1196 },
-})
-
-function loadScript(src) {
-  return new Promise((resolve, reject) => {
-    if (document.querySelector(`script[src="${src}"]`)) {
-      resolve()
-      return
-    }
-    const script = document.createElement('script')
-    script.src = src
-    script.onload = resolve
-    script.onerror = reject
-    document.head.appendChild(script)
-  })
-}
-
-function loadGoogleMapsScript(apiKey) {
-  return new Promise((resolve, reject) => {
-    if (window.google && window.google.maps) {
-      resolve()
-      return
-    }
-    window.initMap = () => resolve()
-    const script = document.createElement('script')
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap`
-    script.async = true
-    script.defer = true
-    document.head.appendChild(script)
-  })
-}
-
-async function caricaSegnaposti() {
-  try {
-    const res = await fetch(`${HOST}/api/v1/segnaposti`)
-    if (!res.ok) throw new Error('Errore caricamento segnaposti')
-    segnaposti.value = await res.json()
-
-    // Rimuovi marker vecchi
-    markers.value.forEach(m => m.setMap(null))
-    markers.value = []
-
-    // Aggiungi nuovi marker
-    segnaposti.value.forEach(s => {
-      const marker = new google.maps.Marker({
-        position: { lat: s.coordinate.lat, lng: s.coordinate.lng },
-        map: map.value,
-        title: s.nome,
-        icon: {
-          url: `${HOST}/target.svg`,
-          scaledSize: new google.maps.Size(40, 40),
-          anchor: new google.maps.Point(20, 20),
-        },
-      })
-      marker.addListener('click', () => {
-        modificaSegnaposto(s)
-      })
-      markers.value.push(marker)
-    })
-  } catch (e) {
-    console.error(e)
-  }
-}
-
-function nuovoSegnaposto() {
-  formMode.value = 'add'
-  form.value = {
-    id: null,
-    nome: '',
-    descrizione: '',
-    punti: 0,
-    coordinate: { lat: 46.0704, lng: 11.1196 },
-  }
-  showForm.value = true
-}
-
-function modificaSegnaposto(segnaposto) {
-  formMode.value = 'edit'
-  form.value = JSON.parse(JSON.stringify(segnaposto)) // copia profonda
-  showForm.value = true
-}
-
-function closeForm() {
-  showForm.value = false
-}
-
-async function submitForm() {
-  try {
-    const url =
-      formMode.value === 'add'
-        ? `${HOST}/api/v1/segnaposti`
-        : `${HOST}/api/v1/segnaposti/${form.value.id}`
-    const method = formMode.value === 'add' ? 'POST' : 'PUT'
-
-    const res = await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form.value),
-    })
-
-    if (!res.ok) {
-      const errData = await res.json()
-      throw new Error(errData.message || 'Errore nel salvataggio')
-    }
-
-    await caricaSegnaposti()
-    closeForm()
-  } catch (e) {
-    alert(e.message)
-  }
-}
-
-async function eliminaSegnaposto() {
-  if (!form.value.id) return
-  if (!confirm('Sei sicuro di voler eliminare questo segnaposto?')) return
-
-  try {
-    const res = await fetch(`${HOST}/api/v1/segnaposti/${form.value.id}`, {
-      method: 'DELETE',
-    })
-
-    if (!res.ok) {
-      const errData = await res.json()
-      throw new Error(errData.message || 'Errore nell\'eliminazione')
-    }
-
-    await caricaSegnaposti()
-    closeForm()
-  } catch (e) {
-    alert(e.message)
-  }
-}
-
-onMounted(async () => {
-  try {
-    await loadScript(`${HOST}/api/maps-config.js`)
-    await loadGoogleMapsScript(window.GOOGLE_MAPS_API_KEY)
-
-    map.value = new google.maps.Map(document.getElementById('map'), {
-      center: { lat: 46.0704, lng: 11.1196 },
-      zoom: 13,
-      styles: [
-        {
-          featureType: "poi",
-          elementType: "labels",
-          stylers: [{ visibility: "off" }]
-        }
-      ]
-    })
-
-    await caricaSegnaposti()
-  } catch (error) {
-    console.error(error)
-  }
-})
-</script>
-
 <style scoped>
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.admin-home {
   padding: 20px;
 }
-
 #map {
   width: 100%;
-  height: 75vh;
-  margin-top: 20px;
-  border-radius: 10px;
+  height: 70vh;
+  margin-top: 10px;
   border: 1px solid #ccc;
 }
-
-.button {
-  background-color: #0077cc;
+.btn-nuovo {
+  margin-top: 10px;
+  padding: 10px 15px;
+  background-color: #2e86de;
   color: white;
-  padding: 8px 12px;
   border: none;
-  border-radius: 6px;
   cursor: pointer;
+  font-weight: bold;
 }
-
-.button:hover {
-  background-color: #005fa3;
-}
-
-.overlay {
+.form-overlay {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.5);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
 }
-
-.modale {
+.form-container {
   background: white;
-  padding: 20px;
-  border-radius: 10px;
-  width: 350px;
-  max-width: 90vw;
-  box-shadow: 0 0 10px rgba(0,0,0,0.25);
+  padding: 25px;
+  width: 400px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
 }
-
-.modale form label {
-  display: block;
+.form-container h2 {
+  margin-bottom: 15px;
+}
+form label {
   margin-top: 10px;
   font-weight: bold;
 }
-
-.modale form input,
-.modale form textarea {
+form input, form textarea {
+  padding: 8px;
+  margin-top: 5px;
   width: 100%;
-  padding: 6px 8px;
-  margin-top: 4px;
-  box-sizing: border-box;
-  border: 1px solid #ccc;
-  border-radius: 4px;
 }
-
-.modale form textarea {
-  resize: vertical;
-  min-height: 60px;
+.form-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
 }
-
-.modale form button {
-  margin-top: 15px;
-  margin-right: 10px;
+.btn-elimina {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
 }
 </style>

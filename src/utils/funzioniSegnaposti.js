@@ -1,14 +1,19 @@
 const HOST = import.meta.env.VITE_API_BASE_URL
 
+// Salviamo i marker globalmente per poterli rimuovere prima di aggiungerne di nuovi
+let markers = []
 
 export async function posizionaSegnaposti(map, callback) {
   if (!map) return;
 
-  const response = await fetch(`${HOST}/api/v1/segnaposti`);
-  const segnaposti = await response.json();
+  // Rimuove i vecchi marker dalla mappa
+  markers.forEach(marker => marker.setMap(null))
+  markers = []
 
-  // Una sola finestra info per tutti i marker
-  const infoWindow = new google.maps.InfoWindow();
+  const response = await fetch(`${HOST}/api/v1/segnaposti`)
+  const segnaposti = await response.json()
+
+  const infoWindow = new google.maps.InfoWindow()
 
   segnaposti.forEach(segnaposto => {
     const marker = new google.maps.Marker({
@@ -23,15 +28,14 @@ export async function posizionaSegnaposti(map, callback) {
         scaledSize: new google.maps.Size(40, 40),
         anchor: new google.maps.Point(20, 20)
       }
-    });
+    })
 
-
-    // la funzione callback è quella presa in input (è il secondo parametro di posizionaSegnaposti) ed è definita nel file Home.vue
-    // quando viene cliccato un marker, viene chiamata la callback con il segnaposto come argomento
     marker.addListener('click', () => {
-      if (callback){
+      if (callback) {
         callback(segnaposto)
       }
-    });
-  });
+    })
+
+    markers.push(marker) // Salva il marker per rimuoverlo in seguito
+  })
 }

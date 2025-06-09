@@ -15,7 +15,7 @@ const errorMessage = ref('')
 const emit = defineEmits(['login'])
 
 async function login() {
-  errorMessage.value = '';
+  errorMessage.value = ''
   try {
     const response = await fetch(API_URL, {
       method: 'POST',
@@ -26,40 +26,36 @@ async function login() {
       }),
     });
 
-    let data;
-
+    let data
     try {
-      data = await response.json();
-      console.log('Risposta dal backend:', data);
+      data = await response.json()
     } catch (jsonErr) {
-      throw new Error('Errore nel parsing della risposta del server');
+      throw new Error('Errore nel parsing della risposta del server')
     }
 
-    // Se errore, esco subito
-    if (!response.ok || !data.success) {
-      throw new Error(data.message || 'Errore login');
+    if (!response.ok) {
+      throw new Error(data.message || 'Errore login')
     }
 
-    // Salva l'utente nello stato globale
-    setLoggedUser(data);
+    // Salva il login nello stato globale
+    setLoggedUser(data)
 
-    // Salva token e utente nel localStorage
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('user', JSON.stringify(data.user));
-    console.log('Utente salvato nel localStorage:', data.user);
+    localStorage.setItem('user', JSON.stringify(data.user))
+    localStorage.setItem('token', data.token)
 
-    // Redirect in base al ruolo
-    console.log(`Reindirizzamento a ${data.redirectTo}`);
-    router.push(data.redirectTo);
-
+    // Reindirizzamento basato sul ruolo
+    const ruolo = data.user?.ruolo
+    if (ruolo === 'admin') {
+      router.push('/admin/home')
+    } else {
+      router.push('/')
+    }
 
   } catch (error) {
-    errorMessage.value = error.message;
-    console.error("Errore durante il login:", error.message);
+    errorMessage.value = error.message
+    console.error("Errore durante il login:", error.message)
   }
 }
-
-
 </script>
 
 <template>
