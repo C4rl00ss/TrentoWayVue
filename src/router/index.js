@@ -2,13 +2,25 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/Home.vue'
 import LoginView from '../views/Login.vue'
 import RegisterView from '../views/Register.vue'
-import AdminView from '../views/AdminDashboard.vue'
+
+// DECIDERE COSA TENERE 
+import AdminView from '../views/AdminDashboard.vue'  // GIULIA
+import AdminHomeView from '../views/AdminHome.vue'   //SCARA
+
 
 const routes = [
   { path: '/', name: 'home', component: HomeView },
   { path: '/login', name: 'login', component: LoginView },
   { path: '/register', name: 'register', component: RegisterView },
+
+//////////////////////////////////////////////////////////////////////////
+  // GIULIA
   { path: '/admin/dashboard', name: 'AdminDashboard', component: AdminView, meta: { requiresAuth: true, requiresAdmin: true } },
+  // SCARA
+  { path: '/admin/home', name: 'AdminHome', component: AdminHomeView, meta: { requiresAuth: true, requiresAdmin: true } },
+//////////////////////////////////////////////////////////////////////////
+
+
   { path: '/:pathMatch(.*)*', redirect: '/' } // catch-all
 ]
 

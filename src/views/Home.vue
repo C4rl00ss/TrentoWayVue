@@ -18,42 +18,33 @@
 
 
     <div id="map"></div>
+    <popUp 
+       v-if ="SegnapostoSelezionato"
+       :segnaposto = "SegnapostoSelezionato"
+        @chiudi="SegnapostoSelezionato = null"
+    />
+
   </div>
 </template>
 
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { posizionaSegnaposti } from '@/utils/funzioniSegnaposti.js'
+import popUp  from '@/components/popUp.vue'
+
+const HOST = import.meta.env.VITE_API_BASE_URL
 
 const router = useRouter()
 
 const loggedUser = ref(null)
 
-onMounted(() => {
+const SegnapostoSelezionato = ref(null)
 
-  const storedUser = localStorage.getItem('user')
-  if (storedUser) {
-    loggedUser.value = JSON.parse(storedUser)
-    console.log("Utente loggato:", loggedUser.value)
-  }
+let map = null
 
-  loadScript('http://localhost:3000/api/maps-config.js')
-    .then(() => {
-      loadGoogleMapsScript(window.GOOGLE_MAPS_API_KEY)
-    })
-    .catch((err) => {
-      console.error('Errore caricamento config:', err)
-    })
 
-  function loadGoogleMapsScript(apiKey) {
-    const script = document.createElement('script')
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap`
-    script.async = true
-    script.defer = true
-    document.head.appendChild(script)
-  }
-
-  function loadScript(src) {
+function loadScript(src) {
     return new Promise((resolve, reject) => {
       const script = document.createElement('script')
       script.src = src
@@ -63,22 +54,58 @@ onMounted(() => {
     })
   }
 
-  // Iniettiamo la funzione globalmente perché Google Maps lo richiede
+
+function loadGoogleMapsScript(apiKey) {
+    const script = document.createElement('script')
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap`
+    script.async = true
+    script.defer = true
+    document.head.appendChild(script)
+  }
+
+
+
+onMounted(async () => {
+  const storedUser = localStorage.getItem('user')
+  if (storedUser) {
+    loggedUser.value = JSON.parse(storedUser)
+    console.log("Utente loggato:", loggedUser.value)
+  }
+
+  try {
+    await loadScript(`${HOST}/api/maps-config.js`)
+    await loadGoogleMapsScript(window.GOOGLE_MAPS_API_KEY)
+    // Posso chiamare posizionaSegnaposti solo dopo che la mappa è pronta
+   
+  } catch (err) {
+    console.error('Errore caricamento config o mappa:', err)
+  }
+
   window.initMap = () => {
     const centerCoords = { lat: 46.0704, lng: 11.1196 }
 
-    const map = new google.maps.Map(document.getElementById('map'), {
+    map = new google.maps.Map(document.getElementById('map'), {
       center: centerCoords,
       zoom: 13,
-    })
+      styles: [
+      {
+        featureType: "poi",
+        elementType: "labels",
+        stylers: [{ visibility: "off" }]
+      }
+  ]
 
-    new google.maps.Marker({
-      position: centerCoords,
-      map: map,
-      title: 'Centro di Trento',
     })
+ 
+    // chiamata alla funzione per posizionare i segnaposti e anche per gestire il click sui segnaposti
+    // questa funzione prende come secondo parametro un'altra funzione che ha come input segnaposto e viene chiamata
+    // nel file funzioniSegnaposti.js qunando si clicca su un segnaposto
+     posizionaSegnaposti(map, (segnaposto) => {
+      SegnapostoSelezionato.value = segnaposto;
+     })
   }
 })
+
 
 // Funzione per fare logout
 function logout() {

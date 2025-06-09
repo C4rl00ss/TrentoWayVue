@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
-const HOST = import.meta.env.VITE_API_HOST || 'http://localhost:3000'
+const HOST = import.meta.env.VITE_API_BASE_URL
 const API_URL = `${HOST}/api/v1/autenticazione/registrazione`
 
 const email = ref('')
@@ -29,7 +29,7 @@ async function register() {
     lastName: cognome.value
   }
 
-  console.log("Dati inviati al backend:", dati)
+
 
   try {
     const response = await fetch(API_URL, {
@@ -37,8 +37,11 @@ async function register() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(dati),
     })
+    
+
 
     const data = await response.json()
+    console.log("Risposta del server:", data)
 
     if (!response.ok) {
       throw new Error(data.message || 'Errore registrazione')
