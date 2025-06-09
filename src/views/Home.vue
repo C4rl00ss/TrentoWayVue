@@ -31,39 +31,26 @@
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { posizionaSegnaposti } from '@/utils/funzioniSegnaposti.js'
-import popUp  from '@/components/popUp.vue'
+import { loadGoogleMaps } from '@/utils/loadGoogleMaps.js' // import funzione centralizzata
+import popUp from '@/components/popUp.vue'
 
 const HOST = import.meta.env.VITE_API_BASE_URL
 
 const router = useRouter()
-
 const loggedUser = ref(null)
-
 const SegnapostoSelezionato = ref(null)
-
 let map = null
 
-
+// Funzione per caricare lo script che definisce la chiave (maps-config.js)
 function loadScript(src) {
-    return new Promise((resolve, reject) => {
-      const script = document.createElement('script')
-      script.src = src
-      script.onload = resolve
-      script.onerror = reject
-      document.head.appendChild(script)
-    })
-  }
-
-
-function loadGoogleMapsScript(apiKey) {
+  return new Promise((resolve, reject) => {
     const script = document.createElement('script')
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap`
-    script.async = true
-    script.defer = true
+    script.src = src
+    script.onload = resolve
+    script.onerror = reject
     document.head.appendChild(script)
-  }
-
-
+  })
+}
 
 onMounted(async () => {
   const storedUser = localStorage.getItem('user')
@@ -73,36 +60,33 @@ onMounted(async () => {
   }
 
   try {
+    // Carica il file config con la chiave
     await loadScript(`${HOST}/api/maps-config.js`)
-    await loadGoogleMapsScript(window.GOOGLE_MAPS_API_KEY)
-    // Posso chiamare posizionaSegnaposti solo dopo che la mappa è pronta
-   
-  } catch (err) {
-    console.error('Errore caricamento config o mappa:', err)
-  }
 
-  window.initMap = () => {
+    // Carica le Google Maps API tramite funzione centralizzata
+    await loadGoogleMaps(window.GOOGLE_MAPS_API_KEY)
+
+    // Inizializza la mappa
     const centerCoords = { lat: 46.0704, lng: 11.1196 }
-
     map = new google.maps.Map(document.getElementById('map'), {
       center: centerCoords,
       zoom: 13,
       styles: [
-      {
-        featureType: "poi",
-        elementType: "labels",
-        stylers: [{ visibility: "off" }]
-      }
-  ]
-
+        {
+          featureType: "poi",
+          elementType: "labels",
+          stylers: [{ visibility: "off" }]
+        }
+      ]
     })
- 
-    // chiamata alla funzione per posizionare i segnaposti e anche per gestire il click sui segnaposti
-    // questa funzione prende come secondo parametro un'altra funzione che ha come input segnaposto e viene chiamata
-    // nel file funzioniSegnaposti.js qunando si clicca su un segnaposto
-     posizionaSegnaposti(map, (segnaposto) => {
-      SegnapostoSelezionato.value = segnaposto;
-     })
+
+    
+    posizionaSegnaposti(map, (segnaposto) => {
+      SegnapostoSelezionato.value = segnaposto
+    })
+
+  } catch (err) {
+    console.error('Errore caricamento config o mappa:', err)
   }
 })
 

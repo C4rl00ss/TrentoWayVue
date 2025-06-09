@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { posizionaSegnaposti } from '@/utils/funzioniSegnaposti'
+import { loadGoogleMaps } from '@/utils/loadGoogleMaps'
 
 const map = ref(null)
 const selectedSegnaposto = ref(null)
@@ -16,14 +17,33 @@ const lng = ref(0)
 
 const HOST = import.meta.env.VITE_API_BASE_URL
 
-onMounted(() => {
-  const mapOptions = {
-    center: { lat: 46.0667, lng: 11.1167 },
-    zoom: 13
+onMounted(async () => {
+  try {
+    // Carica la chiave dalle API
+    await loadScript(`${HOST}/api/maps-config.js`) // questo definisce window.GOOGLE_MAPS_API_KEY
+    await loadGoogleMaps(window.GOOGLE_MAPS_API_KEY)
+
+    const mapOptions = {
+      center: { lat: 46.0667, lng: 11.1167 },
+      zoom: 13
+    }
+
+    map.value = new google.maps.Map(document.getElementById('map'), mapOptions)
+    caricaSegnaposti()
+  } catch (error) {
+    console.error('Errore nel caricamento di Google Maps:', error)
   }
-  map.value = new google.maps.Map(document.getElementById('map'), mapOptions)
-  caricaSegnaposti()
 })
+
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script')
+    script.src = src
+    script.onload = resolve
+    script.onerror = reject
+    document.head.appendChild(script)
+  })
+}
 
 function caricaSegnaposti() {
   posizionaSegnaposti(map.value, (segnaposto) => {
