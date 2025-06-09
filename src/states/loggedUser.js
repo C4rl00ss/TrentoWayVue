@@ -17,7 +17,7 @@ function setLoggedUser(data) {
     loggedUser.user.id = data.user.id;
     loggedUser.user.email = data.user.email;
     loggedUser.user.username = data.user.username;
-    loggedUser.user.role = data.user.role;
+    loggedUser.user.role = data.user.ruolo;
     loggedUser.isLoggedIn = true;
 }
 
