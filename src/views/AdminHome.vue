@@ -2,6 +2,11 @@
 import { ref, onMounted } from 'vue'
 import { posizionaSegnaposti } from '@/utils/funzioniSegnaposti'
 import { loadGoogleMaps } from '@/utils/loadGoogleMaps'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+const loggedUser = ref(null) // anche se non lo usi davvero, serve per evitare errori
+
 
 const map = ref(null)
 const selectedSegnaposto = ref(null)
@@ -129,12 +134,21 @@ async function eliminaSegnaposto() {
   selectedSegnaposto.value = null
   caricaSegnaposti()
 }
+
+function logout() {
+  localStorage.removeItem('user')
+  localStorage.removeItem('token')
+  loggedUser.value = null
+  router.push('/')
+}
+
 </script>
 
 <template>
   <div class="admin-home">
     <h1>Admin - Gestione Segnaposti</h1>
     <button class="btn-nuovo" @click="apriFormNuovo">➕ Nuovo Segnaposto</button>
+     <button class="btn-logout" @click="logout">🔓 Logout</button>
     
     <div id="map" class="map"></div>
 
@@ -187,13 +201,26 @@ async function eliminaSegnaposto() {
 }
 .btn-nuovo {
   margin-top: 10px;
+  margin-right: 10px;
   padding: 10px 15px;
-  background-color: #2e86de;
+  background-color: #4CAF50;
   color: white;
-  border: none;
-  cursor: pointer;
+  text-decoration: none;
+  border-radius: 6px;
   font-weight: bold;
 }
+
+.btn-logout {
+  float: right;
+  margin-top: 10px;
+  padding: 10px 15px;
+  background-color: #4CAF50;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: bold;
+}
+
 .form-overlay {
   position: fixed;
   top: 0;
