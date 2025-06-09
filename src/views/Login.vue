@@ -29,6 +29,7 @@ async function login() {
     let data;
     try {
       data = await response.json();
+      console.log('Risposta dal backend:', data);
     } catch (jsonErr) {
       throw new Error('Errore nel parsing della risposta del server');
     }
@@ -41,11 +42,39 @@ async function login() {
     // Salva il login nello stato globale
     setLoggedUser(data);
 
-    localStorage.setItem('user', JSON.stringify(data.user));
-    localStorage.setItem('token', data.token);
+    const ruoloEffettivo = data.user.role || data.user.ruolo;
+    console.log('Ruolo ricevuto:', ruoloEffettivo);
 
-    // redirect
-    router.push(data.redirectTo || '/')
+    // Adattiamo il campo "role" a "ruolo" per coerenza con il router
+    const utenteCorretto = {
+      id: data.user.id,
+      email: data.user.email,
+      username: data.user.username,
+      ruolo: ruoloEffettivo 
+    };
+
+    // Salva l'utente nel localStorage
+    localStorage.setItem('user', JSON.stringify(utenteCorretto));
+
+    localStorage.setItem('token', data.token);
+    console.log('Utente salvato nel localStorage:', utenteCorretto);
+
+    // redirect basato sul ruolo
+    if (utenteCorretto.ruolo === 'admin') {
+      console.log('Reindirizzamento a /admin/dashboard');
+      router.push('/admin/dashboard');
+    } else {
+      console.log('Reindirizzamento a /');
+      router.push('/');
+    }
+
+    //const ruolo = data.user?.ruolo || data.user?.role || '';
+    //if (ruolo === 'admin') {
+    //  router.push('/admin/dashboard');
+    //} else {
+    //  router.push('/');
+    //}
+    //console.log('REDIRECT TO:', data.redirectTo);
 
   } catch (error) {
     errorMessage.value = error.message;
