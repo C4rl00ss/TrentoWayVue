@@ -9,10 +9,11 @@ export default defineConfig({
     vue(),
     vueDevTools(),
   ],
-  base: '/TrentoWayVue/', // ← AGGIUNGI QUESTA RIGA
+  base: '/TrentoWayVue/',
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
+
     },
   },
 })
