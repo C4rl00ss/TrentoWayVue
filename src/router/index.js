@@ -25,26 +25,35 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(import.meta.env.VITE_BASE_PATH || '/'),
   routes,
 })
 
 router.beforeEach((to, from, next) => {
-  const user = JSON.parse(localStorage.getItem('user'))
-
+  let user = null;
+  
+  // Controllo sicuro per localStorage
+  try {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      user = JSON.parse(userData);
+    }
+  } catch (error) {
+    console.log('localStorage not available or invalid data');
+  }
+  
   // Se la route richiede l'accesso admin
   if (to.meta.requiresAdmin) {
     if (!user || user.ruolo !== 'admin') {
-      // Utente non loggato o non admin -> redireziona alla login o alla home
-      return next('/login') // oppure '/' se preferisci
+      return next('/login')
     }
   }
-
+  
   // Se va alla home normale ma è admin, lo mando sulla pagina admin
   if (to.path === '/' && user?.ruolo === 'admin') {
     return next('/admin/home')
   }
-
+  
   next()
 })
 
