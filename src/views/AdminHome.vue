@@ -149,6 +149,7 @@ function logout() {
     <h1>Admin - Gestione Segnaposti</h1>
     <button class="btn-nuovo" @click="apriFormNuovo">➕ Nuovo Segnaposto</button>
      <button class="btn-logout" @click="logout">🔓 Logout</button>
+     <button class="btn-gestione" @click="router.push('/admin/gestione-segnaposto')">Gestisci Segnaposti</button>
     
     <div id="map" class="map"></div>
 
@@ -264,4 +265,17 @@ form input, form textarea {
   padding: 10px;
   cursor: pointer;
 }
+
+.btn-gestione {
+  margin-top: 10px;
+  margin-left: 10px;
+  padding: 10px 15px;
+  background-color: #2196F3;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+
 </style>
